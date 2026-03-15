@@ -1,0 +1,73 @@
+NAME: Suharshit Singh
+EMAIL: suharshit123@gmail.com
+PHONE: +91-7888390911
+GITHUB: github.com/Suharshit
+LINKEDIN: linkedin.com/in/suharshit-singh0905
+LOCATION: Ludhiana, Punjab, India
+
+SUMMARY:
+Full-stack engineer and 3rd-year CSE student at LPU (CGPA: 8.14) with hands-on experience building
+production-grade, cloud-native applications. Proficient in TypeScript, Next.js, Node.js, PostgreSQL,
+and REST API design. Passionate about scalable system architecture and clean, maintainable code.
+
+EDUCATION:
+Bachelor of Technology in Computer Science | Aug 2023 - Present
+Lovely Professional University, Phagwara
+GPA: 8.14/10
+Relevant Courses: Data Structures & Algorithms, Database Management Systems, Computer Networks,
+Operating Systems, Object-Oriented Programming
+
+SKILLS:
+Languages:        C/C++, Java, Python, TypeScript, JavaScript
+Tools/Frameworks: ReactJS, Next.js, Node.js, Express.js, Tailwind CSS, Shadcn/UI, Bootstrap, REST APIs
+Databases:        PostgreSQL, MySQL, MongoDB, Supabase
+Cloud & DevOps:   Cloudflare R2, Upstash Redis, Vercel, AWS, Docker, CI/CD (GitHub Actions)
+Other Skills:     System Design, Git/GitHub, Agile, Unit Testing, API Integration, Postman, Turborepo
+
+PROJECTS:
+
+Vibely – Event-Centric Photo Sharing Platform | Dec 2025 - Jan 2026
+Tech: Next.js 14, TypeScript, Supabase, Cloudflare R2, ImageKit, Upstash Redis, Expo, Turborepo, Zod
+GitHub: github.com/Suharshit/vibely
+- Engineered a Turborepo monorepo with Next.js 14 App Router, TypeScript strict mode, and shared
+  types across web and Expo mobile.
+- Designed a normalized PostgreSQL schema on Supabase with RLS policies, UUID relationships, and
+  10+ Zod-validated REST API routes.
+- Integrated Cloudflare R2 for object storage, ImageKit CDN for image delivery, and Upstash Redis
+  for API rate limiting.
+- Automated event photo expiry via Vercel Cron jobs; designed as loosely coupled,
+  microservices-inspired modules on free-tier cloud infrastructure for horizontal scalability.
+
+Peer Link – Serverless LAN Mesh Platform | Sep 2025 - Dec 2025
+Tech: Java, TCP/UDP Sockets, Multi-threading, Java NIO, JSON
+GitHub: github.com/Suharshit/peer-link
+- Built a serverless P2P chat and file-transfer tool with automatic Wi-Fi device discovery —
+  no central server required.
+- Implemented concurrent messaging and file transfers using Java multi-threading to ensure a
+  non-blocking user experience.
+- Enforced session privacy via volatile in-memory storage that wipes all data instantly on
+  application close.
+- Developed a virtual room system enabling users to restrict communication to selected trusted
+  peers only.
+
+DSAViz – Algorithm Visualization Platform | Jun 2025 - Jul 2025
+Tech: Next.js, ReactJS, TypeScript, Shadcn/UI, Tailwind CSS, Vercel
+GitHub: github.com/Suharshit/dsaviz
+- Built an interactive full-stack visualization platform for complex DSA concepts with real-time
+  animations and step-by-step rendering.
+- Implemented customizable inputs and speed controls, enhancing learner engagement through a
+  hands-on, adjustable experience.
+- Engineered a component-driven frontend using Next.js, Shadcn/UI, and Tailwind CSS for a
+  cohesive and accessible UI.
+- Deployed on Vercel with performance monitoring; application reliably handles 200+ concurrent
+  users with future scalability built in.
+
+CERTIFICATES:
+Cloud Computing — NPTEL | Oct 2025
+  Covered cloud architecture, virtualization, and service models (IaaS, PaaS, SaaS).
+
+TCP/IP and Advanced Topics — Coursera | Nov 2024
+  Deep-dived into internet protocols, network layers, and advanced TCP/IP mechanisms.
+
+Generative AI Apps with No-Code Tools — Infosys Springboard | Aug 2024
+  Explored building and deploying AI-powered apps without traditional coding.
