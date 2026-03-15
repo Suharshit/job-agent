@@ -3,46 +3,38 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { config } from './utils/config';
-import { log } from './utils/helpers';
-import { JobEntry, Contact } from './types';
+import { log, logError } from './utils/helpers';
+import { scrapeJobs } from './modules/scraper';
+import { fetchJD } from './modules/jd-fetcher';
 
 async function test() {
-  log('test', '--- Phase 2 Type & Config Test ---');
+  log('test', '--- Phase 3: Scraper + JD Fetcher Test ---');
 
-  // Test config loads
-  log('test', `Gemini Key exists: ${!!config.geminiKey}`);
-  log('test', `Telegram Token exists: ${!!config.telegramToken}`);
-  log('test', `Sheet ID exists: ${!!config.sheetId}`);
-  log('test', `Chat ID exists: ${!!config.chatId}`);
-  log('test', `Dev mode: ${config.isDev}`);
+  // Test 1: Scrape jobs
+  log('test', 'Testing job scraper...');
+  const jobs = await scrapeJobs('software engineer intern');
 
-  // Test types work correctly
-  const testContact: Contact = {
-    name: 'Suharshit Singh',
-    title: 'Senior Engineer',
-    linkedin_url: 'https://linkedin.com/in/suharshit',
-    email: null,
-  };
+  if (jobs.length === 0) {
+    logError('test', 'Scraper returned 0 jobs — check selectors or network');
+    return;
+  }
 
-  const testJob: JobEntry = {
-    job_id: 'test-123',
-    scraped_at: new Date().toISOString(),
-    company: 'Razorpay',
-    role: 'SDE Intern',
-    location: 'Bangalore',
-    jd_url: 'https://example.com/job',
-    jd_text: 'Sample JD text...',
-    match_score: 87,
-    tailored_bullets: ['Built X using Y', 'Reduced Z by 40%'],
-    contacts: [testContact],
-    cold_message: 'Hi Suharshit, I noticed...',
-    status: 'pending',
-  };
+  log('test', `✅ Scraper found ${jobs.length} jobs`);
+  log('test', `First job: ${jobs[0].company} — ${jobs[0].title}`);
+  log('test', `URL: ${jobs[0].jd_url}`);
 
-  log('test', `✅ Types work correctly`);
-  log('test', `Sample job: ${testJob.company} — ${testJob.role}`);
-  log('test', '--- All Phase 2 checks passed ✅ ---');
+  // Test 2: Fetch one JD
+  log('test', 'Testing JD fetcher on first result...');
+  const jdText = await fetchJD(jobs[0].jd_url);
+
+  if (!jdText) {
+    logError('test', 'JD fetcher returned empty text — check selectors');
+    return;
+  }
+
+  log('test', `✅ JD fetched — ${jdText.length} characters`);
+  log('test', `Preview: ${jdText.substring(0, 150)}...`);
+  log('test', '--- Phase 3 checks passed ✅ ---');
 }
 
 test().catch(console.error);
