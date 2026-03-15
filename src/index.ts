@@ -16,7 +16,7 @@ const MAX_JOBS = config.isDev ? 2 : config.maxJobs;
 
 export async function runPipeline(query: string): Promise<PipelineResult> {
   log('pipeline', `🚀 Starting job hunt for: "${query}"`);
-  log('pipeline', `Mode: ${config.isDev ? 'DEV (3 jobs)' : 'PROD (10 jobs)'}`);
+  log('pipeline', `Mode: ${config.isDev ? 'DEV (2 jobs)' : `PROD (${config.maxJobs} jobs)`}`);
 
   const result: PipelineResult = {
     success: false,
