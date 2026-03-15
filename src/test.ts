@@ -3,38 +3,24 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import { log, logError } from './utils/helpers';
-import { scrapeJobs } from './modules/scraper';
-import { fetchJD } from './modules/jd-fetcher';
+import { log } from './utils/helpers';
+import { runPipeline } from './index';
 
 async function test() {
-  log('test', '--- Phase 3: Scraper + JD Fetcher Test ---');
+  log('test', '--- Phase 4 Full Pipeline Test ---');
+  log('test', 'Running in DEV mode — will process 3 jobs only');
 
-  // Test 1: Scrape jobs
-  log('test', 'Testing job scraper...');
-  const jobs = await scrapeJobs('software engineer intern');
+  const result = await runPipeline('software engineer intern India');
 
-  if (jobs.length === 0) {
-    logError('test', 'Scraper returned 0 jobs — check selectors or network');
-    return;
+  log('test', `Success: ${result.success}`);
+  log('test', `Jobs processed: ${result.jobs_processed}`);
+  log('test', `Sheet URL: ${result.sheet_url}`);
+
+  if (result.errors.length > 0) {
+    log('test', `Errors: ${result.errors.join(', ')}`);
   }
 
-  log('test', `✅ Scraper found ${jobs.length} jobs`);
-  log('test', `First job: ${jobs[0].company} — ${jobs[0].title}`);
-  log('test', `URL: ${jobs[0].jd_url}`);
-
-  // Test 2: Fetch one JD
-  log('test', 'Testing JD fetcher on first result...');
-  const jdText = await fetchJD(jobs[0].jd_url);
-
-  if (!jdText) {
-    logError('test', 'JD fetcher returned empty text — check selectors');
-    return;
-  }
-
-  log('test', `✅ JD fetched — ${jdText.length} characters`);
-  log('test', `Preview: ${jdText.substring(0, 150)}...`);
-  log('test', '--- Phase 3 checks passed ✅ ---');
+  log('test', '--- Phase 4 Test Complete ---');
 }
 
 test().catch(console.error);

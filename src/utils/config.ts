@@ -17,4 +17,5 @@ export const config = {
   chatId:          requireEnv('YOUR_TELEGRAM_CHAT_ID'),
   sheetUrl:        process.env.GOOGLE_SHEET_URL ?? '',
   isDev:           process.env.NODE_ENV !== 'production',
+  maxJobs:         6, // Set a default max jobs to process in non-dev mode. Can be overridden by env var if needed.
 };
