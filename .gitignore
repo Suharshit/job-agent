@@ -1,7 +1,7 @@
 **`.gitignore`:**
 ```
 node_modules/
-dist/
+# dist/
 .env
 data/credentials.json
 logs/
