@@ -60,7 +60,7 @@ export async function runPipeline(query: string): Promise<PipelineResult> {
           jd_text: job.jd_text,
           match_score: aiResult.match_score,
           tailored_bullets: aiResult.tailored_bullets,
-          contacts: [],           // Phase 5 will fill this
+          contacts: aiResult.contacts,  // ✅ from AI now
           cold_message: aiResult.cold_message,
           status: 'pending',
         };

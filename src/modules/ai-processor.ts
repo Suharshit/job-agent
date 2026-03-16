@@ -3,7 +3,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { config } from '../utils/config';
 import { log, logError, sleep } from '../utils/helpers';
-import { AIProcessorResult } from '../types';
+import { AIProcessorResult, Contact } from '../types';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -103,10 +103,62 @@ Role: ${role}
     const cold_message = await callGemini(coldPrompt);
     log('ai', `Cold message drafted (${cold_message.length} chars)`);
 
-    return { match_score, tailored_bullets, cold_message };
+    // Prompt 4: People to reach out to + cold messages per role
+    const peoplePrompt = `
+    You are a job search coach helping a student get referrals for an internship.
+
+    For the company "${company}" and role "${role}", suggest exactly 5 types of people 
+    the student should reach out to on LinkedIn for a referral or informational chat.
+
+    For each person, provide:
+    1. Their likely job title to search on LinkedIn
+    2. A personalized 3-sentence cold LinkedIn message addressed to that type of person
+
+    Format your response EXACTLY like this, with no extra text:
+    TITLE: [job title to search]
+    MESSAGE: [cold message]
+    ---
+    TITLE: [job title to search]
+    MESSAGE: [cold message]
+    ---
+    (repeat 5 times)
+
+    Student background: Full-stack engineer, 3rd year CSE student at LPU, skilled in Next.js, TypeScript, Node.js, Supabase, PostgreSQL
+    Target company: ${company}
+    Role: ${role}
+    `.trim();
+
+    const peopleRaw = await callGemini(peoplePrompt);
+    await sleep(5000);
+
+    // Parse the people suggestions
+    const peopleSuggestions: Contact[] = peopleRaw
+      .split('---')
+      .map(block => block.trim())
+      .filter(block => block.includes('TITLE:') && block.includes('MESSAGE:'))
+      .slice(0, 5)
+      .map(block => {
+        const titleMatch = block.match(/TITLE:\s*(.+)/);
+        const messageMatch = block.match(/MESSAGE:\s*([\s\S]+?)(?=TITLE:|$)/);
+        return {
+          name: '',
+          title: titleMatch?.[1]?.trim() ?? '',
+          linkedin_url: '',
+          email: messageMatch?.[1]?.trim() ?? null,
+        };
+      });
+
+    log('ai', `Generated ${peopleSuggestions.length} people suggestions`);
+
+    return { 
+      match_score, 
+      tailored_bullets, 
+      cold_message,
+      contacts: peopleSuggestions  // ✅ add this
+    };
 
   } catch (error) {
     logError('ai', `Failed to process ${company} — ${role}`, error);
-    return { match_score: 0, tailored_bullets: [], cold_message: '' };
+    return { match_score: 0, tailored_bullets: [], cold_message: '', contacts: [] };
   }
 }

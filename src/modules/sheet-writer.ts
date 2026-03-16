@@ -11,12 +11,12 @@ const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 const HEADERS = [
   'Job ID', 'Scraped At', 'Company', 'Role', 'Location', 'JD URL',
   'Match Score', 'Bullet 1', 'Bullet 2', 'Bullet 3', 'Bullet 4', 'Bullet 5',
-  'Contact 1 Name', 'Contact 1 Title', 'Contact 1 LinkedIn', 'Contact 1 Email',
-  'Contact 2 Name', 'Contact 2 Title', 'Contact 2 LinkedIn', 'Contact 2 Email',
-  'Contact 3 Name', 'Contact 3 Title', 'Contact 3 LinkedIn', 'Contact 3 Email',
-  'Contact 4 Name', 'Contact 4 Title', 'Contact 4 LinkedIn', 'Contact 4 Email',
-  'Contact 5 Name', 'Contact 5 Title', 'Contact 5 LinkedIn', 'Contact 5 Email',
-  'Cold Message', 'Status',
+  'Search Title 1', 'Name 1', 'LinkedIn 1', 'Cold Message 1',
+  'Search Title 2', 'Name 2', 'LinkedIn 2', 'Cold Message 2',
+  'Search Title 3', 'Name 3', 'LinkedIn 3', 'Cold Message 3',
+  'Search Title 4', 'Name 4', 'LinkedIn 4', 'Cold Message 4',
+  'Search Title 5', 'Name 5', 'LinkedIn 5', 'Cold Message 5',
+  'General Cold Message', 'Status',
 ];
 
 async function getSheets() {
@@ -74,10 +74,10 @@ export async function writeJobToSheet(job: JobEntry): Promise<void> {
     ];
 
     const contacts = [0, 1, 2, 3, 4].map(i => [
-      job.contacts[i]?.name ?? '',
-      job.contacts[i]?.title ?? '',
-      job.contacts[i]?.linkedin_url ?? '',
-      job.contacts[i]?.email ?? '',
+      job.contacts[i]?.title ?? '',        // Title to search on LinkedIn
+      '',                                   // Name — blank, you find manually
+      '',                                   // LinkedIn URL — blank, you find manually
+      job.contacts[i]?.email ?? '',         // Cold message for this person type
     ]).flat();
 
     const row = [

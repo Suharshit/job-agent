@@ -35,6 +35,7 @@ export interface AIProcessorResult {
   match_score: number;
   tailored_bullets: string[];
   cold_message: string;
+  contacts: Contact[];  // ✅ add this
 }
 
 export interface PipelineResult {
