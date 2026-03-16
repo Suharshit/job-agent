@@ -1,5 +1,3 @@
-// src/utils/config.ts
-
 import dotenv from 'dotenv';
 dotenv.config();
 
@@ -10,12 +8,15 @@ function requireEnv(key: string): string {
 }
 
 export const config = {
-  geminiKey:       requireEnv('GEMINI_API_KEY'),
-  telegramToken:   requireEnv('TELEGRAM_BOT_TOKEN'),
-  sheetId:         requireEnv('GOOGLE_SHEET_ID'),
-  credentialsPath: requireEnv('GOOGLE_CREDENTIALS_PATH'),
-  chatId:          requireEnv('YOUR_TELEGRAM_CHAT_ID'),
-  sheetUrl:        process.env.GOOGLE_SHEET_URL ?? '',
-  isDev:           process.env.NODE_ENV !== 'production',
-  maxJobs:         6, // Set a default max jobs to process in non-dev mode. Can be overridden by env var if needed.
+  geminiKey:        requireEnv('GEMINI_API_KEY'),
+  telegramToken:    requireEnv('TELEGRAM_BOT_TOKEN'),
+  sheetId:          requireEnv('GOOGLE_SHEET_ID'),
+  credentialsPath:  requireEnv('GOOGLE_CREDENTIALS_PATH'),
+  chatId:           requireEnv('YOUR_TELEGRAM_CHAT_ID'),
+  sheetUrl:         process.env.GOOGLE_SHEET_URL ?? '',
+  isDev:            process.env.NODE_ENV !== 'production',
+  maxJobs:          6,
+  linkedinCookie:   process.env.LINKEDIN_COOKIE ?? '',
+  alertEmail:       process.env.ALERT_EMAIL ?? '',
+  gmailAppPassword: process.env.GMAIL_APP_PASSWORD ?? '',
 };

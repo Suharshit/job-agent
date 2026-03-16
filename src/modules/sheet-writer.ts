@@ -5,26 +5,60 @@ import { config } from '../utils/config';
 import { log, logError } from '../utils/helpers';
 import { JobEntry } from '../types';
 import * as path from 'path';
+import * as fs from 'fs';
 
 const SCOPES = ['https://www.googleapis.com/auth/spreadsheets'];
 
 const HEADERS = [
-  'Job ID', 'Scraped At', 'Company', 'Role', 'Location', 'JD URL',
-  'Match Score', 'Bullet 1', 'Bullet 2', 'Bullet 3', 'Bullet 4', 'Bullet 5',
-  'Search Title 1', 'Name 1', 'LinkedIn 1', 'Cold Message 1',
-  'Search Title 2', 'Name 2', 'LinkedIn 2', 'Cold Message 2',
-  'Search Title 3', 'Name 3', 'LinkedIn 3', 'Cold Message 3',
-  'Search Title 4', 'Name 4', 'LinkedIn 4', 'Cold Message 4',
-  'Search Title 5', 'Name 5', 'LinkedIn 5', 'Cold Message 5',
-  'General Cold Message', 'Status',
+  // Job Info
+  'Job ID',
+  'Scraped At',
+  'Company',
+  'Role',
+  'Location',
+  'JD URL',
+  'Match Score',
+
+  // Tailored Resume Bullets
+  'Bullet 1',
+  'Bullet 2',
+  'Bullet 3',
+  'Bullet 4',
+  'Bullet 5',
+
+  // AI-Suggested People to Contact (search these titles on LinkedIn)
+  'Search Title 1', 'Cold Message 1',
+  'Search Title 2', 'Cold Message 2',
+  'Search Title 3', 'Cold Message 3',
+  'Search Title 4', 'Cold Message 4',
+  'Search Title 5', 'Cold Message 5',
+
+  // General
+  'General Cold Message',
+  'Status',
 ];
 
 async function getSheets() {
-  const credPath = path.resolve(process.cwd(), config.credentialsPath);
+  let credentials;
+
+  if (process.env.GOOGLE_CREDENTIALS_BASE64) {
+    // Production (Railway): decode from env variable
+    const decoded = Buffer.from(
+      process.env.GOOGLE_CREDENTIALS_BASE64,
+      'base64'
+    ).toString('utf-8');
+    credentials = JSON.parse(decoded);
+  } else {
+    // Local: read from file
+    const credPath = path.resolve(process.cwd(), config.credentialsPath);
+    credentials = JSON.parse(fs.readFileSync(credPath, 'utf-8'));
+  }
+
   const auth = new google.auth.GoogleAuth({
-    keyFile: credPath,
+    credentials,
     scopes: SCOPES,
   });
+
   const authClient = await auth.getClient();
   return google.sheets({ version: 'v4', auth: authClient as any });
 }
@@ -34,7 +68,6 @@ export async function initSheet(): Promise<void> {
   try {
     const sheets = await getSheets();
 
-    // Check if headers already exist
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: config.sheetId,
       range: 'Sheet1!A1:Z1',
@@ -45,7 +78,6 @@ export async function initSheet(): Promise<void> {
       return;
     }
 
-    // Write headers
     await sheets.spreadsheets.values.update({
       spreadsheetId: config.sheetId,
       range: 'Sheet1!A1',
@@ -65,19 +97,14 @@ export async function writeJobToSheet(job: JobEntry): Promise<void> {
   try {
     const sheets = await getSheets();
 
-    const bullets = [
-      job.tailored_bullets[0] ?? '',
-      job.tailored_bullets[1] ?? '',
-      job.tailored_bullets[2] ?? '',
-      job.tailored_bullets[3] ?? '',
-      job.tailored_bullets[4] ?? '',
-    ];
+    // 5 tailored resume bullets
+    const bullets = [0, 1, 2, 3, 4].map(i => job.tailored_bullets[i] ?? '');
 
+    // 5 AI-suggested contacts — only search title + cold message
+    // You manually search the title on LinkedIn and paste the person's name
     const contacts = [0, 1, 2, 3, 4].map(i => [
-      job.contacts[i]?.title ?? '',        // Title to search on LinkedIn
-      '',                                   // Name — blank, you find manually
-      '',                                   // LinkedIn URL — blank, you find manually
-      job.contacts[i]?.email ?? '',         // Cold message for this person type
+      job.contacts[i]?.title ?? '',   // Title to search on LinkedIn
+      job.contacts[i]?.email ?? '',   // Cold message for this person type
     ]).flat();
 
     const row = [
