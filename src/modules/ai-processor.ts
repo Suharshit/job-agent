@@ -27,8 +27,8 @@ async function callGemini(prompt: string, retries = 3): Promise<string> {
     } catch (error: any) {
       if (attempt === retries) throw error;
       if (error?.status === 429) {
-        const match = String(error?.message).match(/(\d+)s/);
-        const waitSeconds = match ? parseInt(match[1]) + 10 : 70;
+        const match = String(error?.message).match(/retryDelay":"(\d+)s"/);
+        const waitSeconds = match ? Math.min(parseInt(match[1]) + 5, 120) : 30;
         log('ai', `Rate limited — waiting ${waitSeconds}s (attempt ${attempt}/${retries})`);
         await sleep(waitSeconds * 1000);
       } else {

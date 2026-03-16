@@ -14,9 +14,14 @@ import { JobEntry, PipelineResult } from './types';
 
 const MAX_JOBS = config.isDev ? 2 : config.maxJobs;
 
-export async function runPipeline(query: string): Promise<PipelineResult> {
+type ProgressCallback = (step: string) => Promise<void>;
+const noOp: ProgressCallback = async () => {};
+
+export async function runPipeline(
+  query: string,
+  onProgress: ProgressCallback = noOp
+): Promise<PipelineResult> {
   log('pipeline', `🚀 Starting job hunt for: "${query}"`);
-  log('pipeline', `Mode: ${config.isDev ? 'DEV (2 jobs)' : `PROD (${config.maxJobs} jobs)`}`);
 
   const result: PipelineResult = {
     success: false,
@@ -26,26 +31,36 @@ export async function runPipeline(query: string): Promise<PipelineResult> {
   };
 
   try {
-    // Step 1: Scrape job listings
+    // Step 1
+    await onProgress('Step 1/4 — Scraping LinkedIn job listings...');
     log('pipeline', 'Step 1/4 — Scraping job listings...');
     const listings = await scrapeJobs(query);
     const limited = listings.slice(0, MAX_JOBS);
     log('pipeline', `Working with ${limited.length} jobs`);
 
-    // Step 2: Fetch full JDs
+    if (limited.length === 0) {
+      result.errors.push('No jobs found for this query');
+      return result;
+    }
+
+    // Step 2
+    await onProgress(`Step 2/4 — Fetching ${limited.length} job descriptions...`);
     log('pipeline', 'Step 2/4 — Fetching job descriptions...');
     const withJDs = await fetchAllJDs(limited);
 
-    // Step 3: Init sheet
+    // Step 3
+    await onProgress('Step 3/4 — Setting up Google Sheet...');
     log('pipeline', 'Step 3/4 — Setting up Google Sheet...');
     await initSheet();
 
-    // Step 4: AI process + write each job
+    // Step 4
+    await onProgress(`Step 4/4 — AI processing ${withJDs.length} jobs...`);
     log('pipeline', 'Step 4/4 — AI processing and writing to sheet...');
 
     for (let i = 0; i < withJDs.length; i++) {
       const job = withJDs[i];
       log('pipeline', `Processing job ${i + 1}/${withJDs.length}: ${job.company}`);
+      await onProgress(`🤖 Processing ${i + 1}/${withJDs.length}: ${job.company} — ${job.title}`);
 
       try {
         const aiResult = await processJob(job.company, job.title, job.jd_text);
@@ -60,7 +75,7 @@ export async function runPipeline(query: string): Promise<PipelineResult> {
           jd_text: job.jd_text,
           match_score: aiResult.match_score,
           tailored_bullets: aiResult.tailored_bullets,
-          contacts: aiResult.contacts,  // ✅ from AI now
+          contacts: aiResult.contacts,
           cold_message: aiResult.cold_message,
           status: 'pending',
         };
@@ -76,8 +91,7 @@ export async function runPipeline(query: string): Promise<PipelineResult> {
     }
 
     result.success = true;
-    log('pipeline', `✅ Pipeline complete! ${result.jobs_processed} jobs written to sheet`);
-    log('pipeline', `📊 Sheet: ${config.sheetUrl}`);
+    log('pipeline', `✅ Done! ${result.jobs_processed} jobs written to sheet`);
 
   } catch (error) {
     logError('pipeline', 'Pipeline failed', error);
@@ -91,7 +105,7 @@ export async function runPipeline(query: string): Promise<PipelineResult> {
 const query = process.argv[2];
 if (query) {
   runPipeline(query).then(result => {
-    console.log('\n📊 Final Result:', JSON.stringify(result, null, 2));
+    console.log('\n📊 Result:', JSON.stringify(result, null, 2));
     process.exit(result.success ? 0 : 1);
   });
 }
