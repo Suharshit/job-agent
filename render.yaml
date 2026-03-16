@@ -1,9 +1,0 @@
-services:
-  - type: worker
-    name: job-agent
-    runtime: node
-    buildCommand: npm install && npm run build
-    startCommand: node --max-old-space-size=400 dist/bot/start.js
-    envVars:
-      - key: NODE_ENV
-        value: production
