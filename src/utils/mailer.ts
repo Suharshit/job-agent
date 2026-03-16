@@ -1,67 +1,34 @@
 // src/utils/mailer.ts
 
-import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 import { config } from './config';
 import { log, logError } from './helpers';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: config.alertEmail,
-    pass: config.gmailAppPassword,
-  },
-});
-
 export type AlertType = 'error' | 'warning' | 'info';
+
+// Create OAuth2 client using service account won't work for Gmail
+// Instead we use a simple fetch to Gmail API with an access token
+// The simplest free alternative: use Telegram itself as the alert channel
 
 export async function sendAlert(
   subject: string,
   body: string,
   type: AlertType = 'error'
 ): Promise<void> {
-  if (!config.alertEmail || !config.gmailAppPassword) {
-    log('mailer', 'No email config — skipping alert');
-    return;
-  }
-
   const emoji = type === 'error' ? '🔴' : type === 'warning' ? '🟡' : '🟢';
-  const timestamp = new Date().toISOString();
 
-  try {
-    await transporter.sendMail({
-      from: `"Job Agent Monitor" <${config.alertEmail}>`,
-      to: config.alertEmail,
-      subject: `${emoji} Job Agent: ${subject}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px;">
-          <h2 style="color: ${type === 'error' ? '#dc2626' : type === 'warning' ? '#d97706' : '#16a34a'}">
-            ${emoji} ${subject}
-          </h2>
-          <p><strong>Time:</strong> ${timestamp}</p>
-          <p><strong>Environment:</strong> ${config.isDev ? 'Development' : 'Production'}</p>
-          <hr/>
-          <pre style="background:#f4f4f4; padding:16px; border-radius:8px; overflow-x:auto;">
-${body}
-          </pre>
-          <hr/>
-          <p style="color:#666; font-size:12px;">Job Agent Monitor — automated alert</p>
-        </div>
-      `,
-    });
-    log('mailer', `Alert sent: "${subject}"`);
-  } catch (error) {
-    logError('mailer', 'Failed to send alert email', error);
-  }
+  // Primary: Send via Telegram (always works, no SMTP needed)
+  await sendTelegramAlert(`${emoji} *${subject}*\n\n${body}`);
 }
 
 export async function sendErrorAlert(module: string, error: unknown): Promise<void> {
   const errorMessage = error instanceof Error
-    ? `${error.message}\n\nStack:\n${error.stack}`
+    ? error.message
     : String(error);
 
   await sendAlert(
     `Error in ${module}`,
-    `Module: ${module}\n\nError:\n${errorMessage}`,
+    `Module: ${module}\n\nError: ${errorMessage}`,
     'error'
   );
 }
@@ -69,7 +36,31 @@ export async function sendErrorAlert(module: string, error: unknown): Promise<vo
 export async function sendQuotaAlert(): Promise<void> {
   await sendAlert(
     'Gemini API quota exhausted',
-    `Your daily Gemini quota (20 requests) has been exhausted.\n\nThe bot will resume tomorrow when quota resets.\n\nTo check usage: https://aistudio.google.com`,
+    'Your daily Gemini quota (20 requests) has been used up.\n\nBot resumes tomorrow when quota resets.',
     'warning'
   );
+}
+
+async function sendTelegramAlert(message: string): Promise<void> {
+  if (!config.telegramToken || !config.chatId) return;
+
+  try {
+    const url = `https://api.telegram.org/bot${config.telegramToken}/sendMessage`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        chat_id: config.chatId,
+        text: message,
+      }),
+    });
+
+    if (response.ok) {
+      log('mailer', 'Alert sent via Telegram');
+    } else {
+      logError('mailer', 'Telegram alert failed', await response.text());
+    }
+  } catch (error) {
+    logError('mailer', 'Failed to send Telegram alert', error);
+  }
 }
