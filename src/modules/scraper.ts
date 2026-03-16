@@ -3,8 +3,7 @@
 import { chromium } from 'playwright';
 import { JobListing } from '../types';
 import { log, logError, randomDelay } from '../utils/helpers';
-
-const MAX_JOBS = 10;
+import { config } from '../utils/config';
 
 export async function scrapeJobs(query: string): Promise<JobListing[]> {
   log('scraper', `Starting search for: "${query}"`);
@@ -59,7 +58,7 @@ export async function scrapeJobs(query: string): Promise<JobListing[]> {
     // Filter out any incomplete cards
     const valid = jobCards
       .filter((j) => j.title && j.company && j.jd_url)
-      .slice(0, MAX_JOBS);
+      .slice(0, config.maxJobs);
 
     listings.push(...valid);
     log('scraper', `Found ${listings.length} valid job listings`);

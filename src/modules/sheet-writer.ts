@@ -14,6 +14,8 @@ const HEADERS = [
   'Contact 1 Name', 'Contact 1 Title', 'Contact 1 LinkedIn', 'Contact 1 Email',
   'Contact 2 Name', 'Contact 2 Title', 'Contact 2 LinkedIn', 'Contact 2 Email',
   'Contact 3 Name', 'Contact 3 Title', 'Contact 3 LinkedIn', 'Contact 3 Email',
+  'Contact 4 Name', 'Contact 4 Title', 'Contact 4 LinkedIn', 'Contact 4 Email',
+  'Contact 5 Name', 'Contact 5 Title', 'Contact 5 LinkedIn', 'Contact 5 Email',
   'Cold Message', 'Status',
 ];
 
@@ -71,7 +73,7 @@ export async function writeJobToSheet(job: JobEntry): Promise<void> {
       job.tailored_bullets[4] ?? '',
     ];
 
-    const contacts = [0, 1, 2].map(i => [
+    const contacts = [0, 1, 2, 3, 4].map(i => [
       job.contacts[i]?.name ?? '',
       job.contacts[i]?.title ?? '',
       job.contacts[i]?.linkedin_url ?? '',
