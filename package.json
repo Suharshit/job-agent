@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "tsc",
+    "start": "node --max-old-space-size=400 dist/bot/start.js",
+    "dev": "npx ts-node src/bot/start.ts"
   },
   "keywords": [],
   "author": "",
