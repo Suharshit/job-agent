@@ -12,9 +12,8 @@ async function scrapeJobs(query) {
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage', // ← add this
-            '--disable-gpu', // ← add this
-            '--single-process', // ← add this for low memory
+            '--disable-dev-shm-usage',
+            '--disable-gpu',
         ],
     });
     const context = await browser.newContext({
@@ -23,15 +22,31 @@ async function scrapeJobs(query) {
     });
     const page = await context.newPage();
     const listings = [];
+    browser.on('disconnected', () => {
+        (0, helpers_1.logError)('scraper', 'Browser disconnected unexpectedly');
+    });
+    page.on('crash', () => {
+        (0, helpers_1.logError)('scraper', 'Page crashed unexpectedly');
+    });
+    page.on('close', () => {
+        (0, helpers_1.log)('scraper', 'Page was closed');
+    });
     try {
         const searchQuery = encodeURIComponent(query);
         const url = `https://www.linkedin.com/jobs/search/?keywords=${searchQuery}&position=1&pageNum=0`;
         (0, helpers_1.log)('scraper', `Opening LinkedIn Jobs...`);
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
         await (0, helpers_1.randomDelay)(2000, 4000);
-        // Scroll with Playwright input API to avoid DOM globals in TS types
+        // Scroll gradually and stop early if the page closes/crashes.
         for (let i = 0; i < 3; i++) {
+            if (page.isClosed()) {
+                throw new Error('Page was closed before scrolling completed');
+            }
             await page.mouse.wheel(0, 800);
+            // Fallback in case wheel events are blocked by overlays/interstitials.
+            await page.evaluate(() => {
+                globalThis.scrollBy?.(0, 800);
+            });
             await (0, helpers_1.randomDelay)(1000, 2000);
         }
         // Extract job cards
