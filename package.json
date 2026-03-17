@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "postinstall": "npx playwright install chromium --with-deps",
     "start": "node --max-old-space-size=400 dist/bot/start.js",
     "dev": "npx ts-node src/bot/start.ts"
   },

@@ -6,9 +6,15 @@ import { log, logError, randomDelay, sanitizeText } from '../utils/helpers';
 
 export async function fetchJD(jd_url: string): Promise<string> {
   const browser = await chromium.launch({
-    headless: true,
-    args: ['--no-sandbox'],
-  });
+  headless: true,
+  args: [
+    '--no-sandbox',
+    '--disable-setuid-sandbox',
+    '--disable-dev-shm-usage',  // ← add this
+    '--disable-gpu',             // ← add this
+    '--single-process',          // ← add this for low memory
+  ],
+});
 
   const context = await browser.newContext({
     userAgent:

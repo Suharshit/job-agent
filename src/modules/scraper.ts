@@ -10,7 +10,13 @@ export async function scrapeJobs(query: string): Promise<JobListing[]> {
 
   const browser = await chromium.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',  // ← add this
+      '--disable-gpu',             // ← add this
+      '--single-process',          // ← add this for low memory
+    ],
   });
 
   const context = await browser.newContext({

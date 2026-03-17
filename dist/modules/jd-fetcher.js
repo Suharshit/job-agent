@@ -8,7 +8,13 @@ const helpers_1 = require("../utils/helpers");
 async function fetchJD(jd_url) {
     const browser = await playwright_1.chromium.launch({
         headless: true,
-        args: ['--no-sandbox'],
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage', // ← add this
+            '--disable-gpu', // ← add this
+            '--single-process', // ← add this for low memory
+        ],
     });
     const context = await browser.newContext({
         userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
